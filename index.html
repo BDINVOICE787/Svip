@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>Admin — Imu Diamond Control</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --line:rgba(255,215,0,.26); --line-2:rgba(255,215,0,.13); --line-3:rgba(255,215,0,.08);
+  --txt:#F5EAD0; --muted:#A89364; --muted-2:#7d6c46;
+  --ok:#4ADE80; --err:#FF6B6B; --warn:#FFB74D; --info:#60A5FA;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+  min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:14px;
+  background:
+    radial-gradient(circle at 14% 4%, rgba(255,215,0,.10), transparent 42%),
+    radial-gradient(circle at 86% 96%, rgba(201,151,28,.12), transparent 46%),
+    linear-gradient(160deg,#0c0a06 0%,#120e07 48%,#080603 100%);
+  background-attachment:fixed; color:var(--txt); overflow-x:hidden;
+  -webkit-user-select:none; user-select:none;
+}
+input,textarea,select{-webkit-user-select:text;user-select:text;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+.bg-deco{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+.bg-deco .grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,215,0,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,215,0,.045) 1px,transparent 1px);
+  background-size:46px 46px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 12%,transparent 74%);
+  mask-image:radial-gradient(ellipse at center,#000 12%,transparent 74%);}
+.bg-deco .glow-a,.bg-deco .glow-b{position:absolute;border-radius:50%;filter:blur(100px);}
+.bg-deco .glow-a{width:330px;height:330px;top:-120px;left:-110px;background:radial-gradient(circle,rgba(255,215,0,.22),transparent 70%);}
+.bg-deco .glow-b{width:370px;height:370px;bottom:-140px;right:-120px;background:radial-gradient(circle,rgba(201,151,28,.20),transparent 70%);}
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:1400;display:flex;flex-direction:column;gap:10px;width:calc(100% - 32px);max-width:420px;pointer-events:none;}
+.toast{display:flex;align-items:center;gap:11px;padding:13px 18px;border-radius:16px;font-size:13.5px;font-weight:700;color:#1c1305;
+  background:linear-gradient(135deg,#FFE9A8,#FFD700 50%,#D9A81E);border:1px solid rgba(255,245,200,.6);
+  box-shadow:0 20px 40px -18px rgba(255,215,0,.85);animation:toastIn .35s cubic-bezier(.22,.9,.32,1.1) both;word-break:break-word;}
+.toast.error{background:linear-gradient(135deg,#5c1a12,#8e2b1c);color:#FFD9CF;border-color:rgba(255,120,90,.45);}
+.toast.warn{background:linear-gradient(135deg,#4d3a0c,#7a5c12);color:#FFE9A8;border-color:rgba(255,215,0,.5);}
+.toast.info{background:linear-gradient(135deg,#0c2d5c,#1a4a8e);color:#CFE0FF;border-color:rgba(120,180,255,.5);}
+.toast i{font-size:16px;flex-shrink:0;}
+.toast.hide{opacity:0;transform:translateY(-16px);transition:opacity .3s ease,transform .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(-22px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+.admin-box{
+  position:relative;width:100%;max-width:760px;min-height:calc(100vh - 28px);max-height:calc(100vh - 28px);
+  background:linear-gradient(168deg,#181308 0%,#0e0a04 100%);
+  border:1px solid var(--line);border-radius:24px;overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:0 50px 100px -30px rgba(0,0,0,.98);}
+.admin-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;z-index:5;
+  background:linear-gradient(90deg,transparent,#C9971C 20%,#FFD700 50%,#C9971C 80%,transparent);}
+
+.admin-login{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;gap:14px;}
+.admin-login-icon{width:84px;height:84px;border-radius:26px;display:grid;place-items:center;font-size:36px;color:#1c1305;margin-bottom:8px;
+  background:linear-gradient(140deg,#FFE9A8,#FFD700 42%,#C9971C);box-shadow:0 16px 40px -16px rgba(255,215,0,.85);}
+.admin-login h2{font-family:'Poppins',sans-serif;font-size:24px;font-weight:800;
+  background-image:linear-gradient(135deg,#FFFDF2,#FFD700 42%,#C9971C 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.admin-login p{font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center;}
+.admin-login input{width:100%;max-width:320px;padding:15px 18px;border-radius:14px;border:1.5px solid rgba(255,215,0,.20);
+  background:rgba(255,215,0,.035);color:#FFE9A8;font-size:17px;font-weight:700;text-align:center;letter-spacing:4px;
+  outline:none;font-family:'Poppins',sans-serif;}
+.admin-login input:focus{border-color:rgba(255,215,0,.65);box-shadow:0 0 0 4px rgba(255,215,0,.10);}
+.admin-login button{width:100%;max-width:320px;padding:15px;border-radius:40px;cursor:pointer;color:#1c1305;
+  font-family:'Inter',sans-serif;font-weight:800;font-size:15px;
+  background:linear-gradient(135deg,#FFE9A8,#FFD700 45%,#D9A81E);border:1px solid rgba(255,245,200,.55);
+  box-shadow:0 12px 26px -12px rgba(255,215,0,.9);display:flex;align-items:center;justify-content:center;gap:8px;}
+.admin-login button:active{transform:scale(.96);}
+.login-err{font-size:12.5px;font-weight:700;color:#FF9A9A;min-height:18px;text-align:center;}
+
+.admin-panel{display:none;flex-direction:column;height:100%;flex:1;min-height:0;}
+.admin-panel.active{display:flex;}
+.admin-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line-3);flex-shrink:0;}
+.admin-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;
+  background-image:linear-gradient(135deg,#FFFDF2,#FFD700 42%,#C9971C 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.admin-title i{color:#FFD700;-webkit-text-fill-color:#FFD700;}
+.header-right{display:flex;align-items:center;gap:6px;}
+.conn-dot{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:5px 9px;border-radius:20px;
+  background:rgba(255,215,0,.07);border:1px solid var(--line-3);color:var(--muted);}
+.conn-dot span.dot{width:7px;height:7px;border-radius:50%;background:#FF6B6B;box-shadow:0 0 8px currentColor;}
+.conn-dot.on span.dot{background:#4ADE80;}
+.icon-btn{width:34px;height:34px;border-radius:10px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.28);
+  color:#D9C48A;font-size:13px;cursor:pointer;display:grid;place-items:center;transition:all .15s;}
+.icon-btn:hover{background:linear-gradient(135deg,#FFD700,#C9971C);color:#1c1305;}
+
+.admin-tabs{display:flex;gap:4px;padding:9px 10px;overflow-x:auto;border-bottom:1px solid var(--line-3);flex-shrink:0;scrollbar-width:none;background:rgba(0,0,0,.15);}
+.admin-tabs::-webkit-scrollbar{display:none;}
+.admin-tab{position:relative;flex-shrink:0;padding:8px 13px;border-radius:40px;font-size:11.5px;font-weight:800;color:var(--muted);
+  background:transparent;border:1px solid var(--line-3);cursor:pointer;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s;}
+.admin-tab i{font-size:10.5px;}
+.admin-tab.active{color:#1c1305;background:linear-gradient(135deg,#FFE9A8,#FFD700 45%,#D9A81E);border-color:rgba(255,245,200,.55);}
+.admin-tab.active i{color:#1c1305;}
+.tab-badge{min-width:16px;height:16px;padding:0 5px;border-radius:20px;background:#E53935;color:#fff;font-size:9px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+.tab-badge.green{background:#16A34A;}
+.admin-tab.active .tab-badge{background:#7a1a12;}
+
+.admin-body{flex:1;overflow-y:auto;padding:14px 16px 30px;min-height:0;}
+.admin-body::-webkit-scrollbar{width:5px;}
+.admin-body::-webkit-scrollbar-thumb{background:rgba(255,215,0,.25);border-radius:5px;}
+
+.admin-section-title{font-size:12.5px;font-weight:800;color:#EEDFB4;display:flex;align-items:center;gap:8px;margin:16px 0 10px;}
+.admin-section-title:first-child{margin-top:0;}
+.admin-section-title i{color:#C9971C;font-size:11px;}
+
+.filter-bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.filter-bar input{flex:1;min-width:140px;padding:10px 13px;border-radius:11px;border:1.5px solid rgba(255,215,0,.20);
+  background:rgba(255,215,0,.035);color:#FFE9A8;font-size:12.5px;font-weight:700;outline:none;font-family:inherit;}
+.filter-bar input:focus{border-color:rgba(255,215,0,.65);}
+.filter-bar select{padding:10px 13px;border-radius:11px;border:1.5px solid rgba(255,215,0,.20);
+  background:rgba(255,215,0,.035);color:#FFE9A8;font-size:12.5px;font-weight:700;outline:none;font-family:inherit;}
+.filter-bar select:focus{border-color:rgba(255,215,0,.65);}
+
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:14px;}
+.stats-grid.cols-4{grid-template-columns:repeat(4,1fr);}
+.stat-card{padding:12px 11px;border-radius:13px;background:linear-gradient(168deg,#1a1408 0%,#110c05 100%);
+  border:1px solid var(--line-3);display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+  background:linear-gradient(180deg,rgba(255,215,0,.7),transparent);}
+.stat-card.green::before{background:linear-gradient(180deg,rgba(74,222,128,.9),transparent);}
+.stat-card.amber::before{background:linear-gradient(180deg,rgba(255,183,77,.9),transparent);}
+.stat-card.red::before{background:linear-gradient(180deg,rgba(255,107,107,.9),transparent);}
+.stat-card.blue::before{background:linear-gradient(180deg,rgba(96,165,250,.9),transparent);}
+.stat-card .st-top{display:flex;align-items:center;gap:6px;color:var(--muted-2);font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+.stat-card .st-top i{color:#C9971C;font-size:11px;}
+.stat-card .st-val{font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;
+  background-image:linear-gradient(135deg,#FFFDF2,#FFD700 45%,#C9971C 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1.1;word-break:break-all;display:flex;align-items:center;gap:4px;}
+.stat-card .st-val .dm{font-size:16px;filter:drop-shadow(0 0 6px rgba(255,215,0,.5));}
+.stat-card.green .st-val{background-image:linear-gradient(135deg,#D1FAE5,#4ADE80);-webkit-background-clip:text;background-clip:text;}
+.stat-card.amber .st-val{background-image:linear-gradient(135deg,#FEF3C7,#FFB74D);-webkit-background-clip:text;background-clip:text;}
+.stat-card.red .st-val{background-image:linear-gradient(135deg,#FECACA,#FF6B6B);-webkit-background-clip:text;background-clip:text;}
+.stat-card.blue .st-val{background-image:linear-gradient(135deg,#DBEAFE,#60A5FA);-webkit-background-clip:text;background-clip:text;}
+
+.item-card{
+  position:relative;
+  background:linear-gradient(168deg,#1a1408 0%,#110c05 100%);
+  border:1.5px solid rgba(255,215,0,.22);
+  border-radius:15px;
+  padding:12px;
+  margin-bottom:9px;
+  overflow:hidden;
+  animation:cardIn .18s cubic-bezier(.22,.9,.32,1.1) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.item-card::before{content:'';position:absolute;top:0;left:14%;right:14%;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,215,0,.85),transparent);}
+.item-card.waiting{border-color:rgba(255,183,77,.4);}
+.item-card.waiting::before{background:linear-gradient(90deg,transparent,rgba(255,183,77,.9),transparent);}
+.item-card.recharge-item{border-color:rgba(74,222,128,.35);}
+.item-card.recharge-item::before{background:linear-gradient(90deg,transparent,rgba(74,222,128,.85),transparent);}
+.item-card.rejected-item{border-color:rgba(255,107,107,.35);}
+.item-card.rejected-item::before{background:linear-gradient(90deg,transparent,rgba(255,107,107,.85),transparent);}
+
+.item-head{display:flex;align-items:center;gap:10px;}
+.item-icon{
+  width:38px;height:38px;border-radius:11px;flex-shrink:0;
+  display:grid;place-items:center;font-size:15px;color:#FFD700;
+  background:linear-gradient(140deg,rgba(255,215,0,.22),rgba(255,215,0,.06));
+  border:1px solid rgba(255,215,0,.35);
+}
+.item-card.waiting .item-icon{color:#FFB74D;background:linear-gradient(140deg,rgba(255,183,77,.22),rgba(255,183,77,.06));border-color:rgba(255,183,77,.4);}
+.item-card.recharge-item .item-icon{color:#4ADE80;background:linear-gradient(140deg,rgba(74,222,128,.22),rgba(74,222,128,.06));border-color:rgba(74,222,128,.4);}
+.item-card.rejected-item .item-icon{color:#FF6B6B;background:linear-gradient(140deg,rgba(255,107,107,.22),rgba(255,107,107,.06));border-color:rgba(255,107,107,.4);}
+.item-info{flex:1;min-width:0;}
+.item-label{font-size:8.5px;font-weight:800;letter-spacing:1.3px;color:#C9971C;text-transform:uppercase;margin-bottom:2px;}
+.item-phone{font-family:'Poppins',monospace;font-size:16px;font-weight:800;letter-spacing:1px;
+  background-image:linear-gradient(135deg,#FFFDF2,#FFD700 45%,#C9971C 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1.15;word-break:break-all;}
+.item-copy{
+  width:32px;height:32px;border-radius:9px;flex-shrink:0;
+  background:rgba(255,215,0,.10);border:1px solid rgba(255,215,0,.30);
+  color:#FFD700;font-size:11px;cursor:pointer;display:grid;place-items:center;transition:transform .15s;
+}
+.item-copy:active{transform:scale(.92);}
+
+.item-otp{
+  display:flex;align-items:center;gap:10px;
+  padding:0 13px;border-radius:11px;
+  background:linear-gradient(135deg,rgba(255,215,0,.16),rgba(255,215,0,.04));
+  border:1.5px solid rgba(255,215,0,.5);
+  opacity:0;transform:translateY(4px) scale(.98);
+  max-height:0;margin-top:0;overflow:hidden;
+  transition:opacity .15s ease,transform .2s cubic-bezier(.22,.9,.32,1.15),max-height .2s ease,padding .18s ease,margin .18s ease;
+}
+.item-otp.revealed{opacity:1;transform:translateY(0) scale(1);max-height:120px;padding:11px 13px;margin-top:8px;}
+.item-otp.revealed .item-otp-code{animation:otpGlow .7s ease-out;}
+@keyframes otpGlow{
+  0%{text-shadow:0 0 0 rgba(255,215,0,0);letter-spacing:12px;}
+  50%{text-shadow:0 0 22px rgba(255,215,0,.95);}
+  100%{text-shadow:0 0 14px rgba(255,215,0,.65);letter-spacing:7px;}
+}
+.item-otp-icon{width:36px;height:36px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;font-size:14px;
+  background:rgba(255,215,0,.14);border:1px solid rgba(255,215,0,.4);color:#FFD700;}
+.item-otp-body{flex:1;min-width:0;}
+.item-otp-label{font-size:8.5px;font-weight:800;letter-spacing:1.8px;color:#C9971C;text-transform:uppercase;margin-bottom:2px;}
+.item-otp-code{font-family:'Poppins',monospace;font-size:24px;font-weight:800;letter-spacing:7px;color:#FFD700;
+  line-height:1;text-shadow:0 0 14px rgba(255,215,0,.65);word-break:break-all;transition:letter-spacing .2s ease;}
+.item-otp-copy{width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  background:rgba(255,215,0,.16);border:1px solid rgba(255,215,0,.45);color:#FFD700;font-size:12px;
+  cursor:pointer;display:grid;place-items:center;transition:transform .15s;}
+.item-otp-copy:active{transform:scale(.92);}
+
+.item-reading{
+  display:flex;align-items:center;gap:8px;padding:0 13px;border-radius:11px;
+  background:rgba(255,215,0,.05);border:1.5px dashed rgba(255,215,0,.35);color:#C9971C;
+  font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;
+  max-height:0;opacity:0;overflow:hidden;
+  transition:opacity .15s ease,max-height .2s ease,padding .2s ease,margin .2s ease;}
+.item-reading.visible{opacity:1;max-height:60px;padding:9px 13px;margin-top:7px;}
+.item-reading .dots{display:inline-flex;gap:4px;}
+.item-reading .dots span{width:6px;height:6px;border-radius:50%;background:#FFD700;animation:dotBounce .9s infinite;}
+.item-reading .dots span:nth-child(2){animation-delay:.12s;}
+.item-reading .dots span:nth-child(3){animation-delay:.24s;}
+@keyframes dotBounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-4px);opacity:1;}}
+
+.item-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-wrap:wrap;}
+.item-meta-left{font-size:10.5px;font-weight:700;color:#D8C48D;line-height:1.5;min-width:0;flex:1;}
+.item-meta-left strong{color:#FFD700;}
+.item-amount{font-family:'Poppins',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.5px;
+  background-image:linear-gradient(135deg,#FFFDF2,#FFD700 45%,#C9971C 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.15;
+  display:inline-flex;align-items:center;gap:4px;}
+.item-amount .dm{font-size:16px;filter:drop-shadow(0 0 6px rgba(255,215,0,.5));}
+.item-time{font-size:9px;font-weight:700;color:var(--muted-2);display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.item-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap;}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.rd-cell{padding:7px 9px;border-radius:9px;background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.16);}
+.rd-cell .rd-k{font-size:8px;font-weight:800;letter-spacing:1.1px;color:#C9971C;text-transform:uppercase;margin-bottom:2px;}
+.rd-cell .rd-v{font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:800;color:#EEDFB4;word-break:break-all;}
+
+.status-pill{display:inline-flex;align-items:center;gap:3px;font-size:8.5px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.status-pill.waiting{background:rgba(255,183,77,.14);color:#FFB74D;border:1px solid rgba(255,183,77,.30);}
+.status-pill.done{background:rgba(74,222,128,.14);color:#4ADE80;border:1px solid rgba(74,222,128,.30);}
+.status-pill.rejected{background:rgba(255,107,107,.14);color:#FF6B6B;border:1px solid rgba(255,107,107,.30);}
+
+.admin-btn{padding:10px 15px;border-radius:36px;cursor:pointer;font-weight:800;font-size:12px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(255,245,200,.55);color:#1c1305;
+  background:linear-gradient(135deg,#FFE9A8,#FFD700 45%,#D9A81E);
+  box-shadow:0 8px 18px -10px rgba(255,215,0,.9);transition:transform .12s,opacity .15s;}
+.admin-btn:active{transform:scale(.96);}
+.admin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.admin-btn i{font-size:11px;color:#1c1305;}
+.admin-btn.full{width:100%;}
+.admin-btn.danger{background:linear-gradient(135deg,#FF8A80,#E53935);border-color:rgba(255,150,150,.5);color:#fff;}
+.admin-btn.danger i{color:#fff;}
+.admin-btn.ok{background:linear-gradient(135deg,#4ADE80,#16A34A);border-color:rgba(160,255,190,.5);color:#fff;}
+.admin-btn.ok i{color:#fff;}
+.admin-btn.ghost{background:rgba(255,215,0,.06);color:#D9C48A;border-color:rgba(255,215,0,.28);box-shadow:none;}
+.admin-btn.ghost i{color:#D9C48A;}
+.admin-btn.sm{padding:7px 11px;font-size:11px;border-radius:9px;}
+
+.admin-item{padding:12px;border-radius:13px;background:linear-gradient(168deg,#1a1408 0%,#110c05 100%);
+  border:1px solid var(--line-3);margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;}
+.admin-item .ai-icon{width:38px;height:38px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;font-size:14px;
+  background:linear-gradient(140deg,rgba(255,215,0,.18),rgba(255,215,0,.05));
+  border:1px solid rgba(255,215,0,.28);color:#FFD700;overflow:hidden;}
+.admin-item .ai-icon img{width:100%;height:100%;object-fit:cover;}
+.admin-item .ai-body{flex:1;min-width:0;}
+.admin-item .ai-title{font-size:13px;font-weight:800;color:#EEDFB4;margin-bottom:3px;word-break:break-word;font-family:'Poppins',monospace;}
+.admin-item .ai-meta{font-size:10.5px;font-weight:600;color:var(--muted-2);line-height:1.55;word-break:break-word;}
+.admin-item .ai-meta strong{color:#FFD700;}
+.admin-item .ai-meta .dm{filter:drop-shadow(0 0 4px rgba(255,215,0,.5));}
+.admin-item .ai-actions{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted-2);font-size:12.5px;font-weight:600;}
+.empty-state i{display:block;font-size:34px;margin-bottom:12px;color:rgba(255,215,0,.25);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:rgba(6,5,3,.85);backdrop-filter:blur(10px);
+  z-index:1200;opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .25s ease,visibility .25s ease;}
+.modal-overlay.active{opacity:1;visibility:visible;pointer-events:auto;}
+.modal-box{position:relative;width:100%;max-width:460px;padding:26px 22px 22px;border-radius:26px;
+  background:linear-gradient(168deg,#171207 0%,#100c05 100%);
+  border:1px solid var(--line);box-shadow:0 50px 90px -34px rgba(0,0,0,.95);
+  transform:translateY(20px) scale(.97);opacity:0;
+  transition:transform .35s cubic-bezier(.22,.9,.32,1.1),opacity .25s ease;
+  max-height:calc(100vh - 40px);overflow-y:auto;}
+.modal-overlay.active .modal-box{transform:translateY(0) scale(1);opacity:1;}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:26px 26px 0 0;
+  background:linear-gradient(90deg,transparent,#C9971C 20%,#FFD700 50%,#C9971C 80%,transparent);}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:5px;display:flex;align-items:center;gap:9px;
+  font-family:'Poppins',sans-serif;
+  background-image:linear-gradient(135deg,#FFF6D0,#FFD700 45%,#C9971C 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.modal-title i{color:#FFD700;-webkit-text-fill-color:#FFD700;font-size:15px;}
+.modal-sub{font-size:12.5px;line-height:1.55;margin-bottom:16px;color:var(--muted);font-weight:500;}
+.modal-input{width:100%;padding:13px 15px;border-radius:13px;border:1.5px solid rgba(255,215,0,.20);
+  background:rgba(255,215,0,.035);color:#FFE9A8;font-size:15px;font-weight:700;
+  font-family:'Poppins',sans-serif;letter-spacing:1px;outline:none;margin-bottom:12px;}
+.modal-input:focus{border-color:rgba(255,215,0,.65);box-shadow:0 0 0 4px rgba(255,215,0,.10);}
+.modal-label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;margin-bottom:6px;color:#DFC98C;}
+.modal-label i{color:#C9971C;font-size:11px;}
+.modal-actions{display:flex;gap:8px;margin-top:12px;}
+.modal-btn{flex:1;padding:13px;border-radius:36px;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;
+  color:#1c1305;background:linear-gradient(135deg,#FFE9A8,#FFD700 45%,#D9A81E);
+  border:1px solid rgba(255,245,200,.55);transition:transform .12s;}
+.modal-btn:active{transform:scale(.96);}
+.modal-btn.ghost{background:rgba(255,215,0,.06);color:#D9C48A;border-color:rgba(255,215,0,.28);}
+.modal-btn i{font-size:13px;color:inherit;}
+
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.icon-picker{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.icon-pick{width:36px;height:36px;border-radius:9px;background:rgba(255,215,0,.04);border:1px solid var(--line-3);
+  cursor:pointer;display:grid;place-items:center;font-size:15px;color:#D9C48A;transition:all .15s;}
+.icon-pick:hover{background:rgba(255,215,0,.12);color:#FFD700;border-color:rgba(255,215,0,.45);}
+.icon-pick.active{background:linear-gradient(135deg,#FFD700,#C9971C);color:#1c1305;border-color:rgba(255,245,200,.6);}
+
+@media (max-width:480px){
+  body{padding:0;}
+  .admin-box{border-radius:0;border:none;min-height:100vh;max-height:100vh;max-width:100%;}
+  .admin-body{padding:12px 12px 24px;}
+  .item-otp-code{font-size:20px;letter-spacing:5px;}
+  .item-phone{font-size:14px;}
+  .item-amount{font-size:16px;}
+  .stats-grid.cols-4{grid-template-columns:repeat(2,1fr);}
+  .stat-card .st-val{font-size:16px;}
+  .admin-tab{padding:7px 11px;font-size:11px;}
+  .row-2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-deco"><span class="glow-a"></span><span class="glow-b"></span><span class="grid"></span></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="admin-box">
+
+  <!-- LOGIN -->
+  <div class="admin-login" id="adminLogin">
+    <div class="admin-login-icon"><i class="fas fa-user-shield"></i></div>
+    <h2>Admin Access</h2>
+    <p>Enter password to continue</p>
+    <input type="password" id="adminPasswordInput" placeholder="••••••" maxlength="40" autocomplete="off">
+    <div class="login-err" id="loginErr"></div>
+    <button id="adminLoginBtn"><i class="fas fa-unlock"></i> Login</button>
+  </div>
+
+  <!-- PANEL -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-header">
+      <div class="admin-title"><i class="fas fa-crown"></i> Admin Control</div>
+      <div class="header-right">
+        <div class="conn-dot" id="connDot"><span class="dot"></span><span id="connText">offline</span></div>
+        <button class="icon-btn" id="refreshBtn" title="Refresh"><i class="fas fa-rotate"></i></button>
+        <button class="icon-btn" id="adminCloseBtn" title="Logout"><i class="fas fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+
+    <div class="admin-tabs" id="adminTabs">
+      <button class="admin-tab active" data-atab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
+      <button class="admin-tab" data-atab="bundles"><i class="fas fa-gem"></i> Bundles <span class="tab-badge green" id="badgeBundles" style="display:none">0</span></button>
+      <button class="admin-tab" data-atab="recharges"><i class="fas fa-bolt"></i> Recharges <span class="tab-badge" id="badgeRecharges" style="display:none">0</span></button>
+      <button class="admin-tab" data-atab="numbers"><i class="fas fa-mobile-screen"></i> Numbers <span class="tab-badge" id="badgeNumbers" style="display:none">0</span></button>
+      <button class="admin-tab" data-atab="otps"><i class="fas fa-key"></i> OTP List <span class="tab-badge green" id="badgeOtps" style="display:none">0</span></button>
+      <button class="admin-tab" data-atab="users"><i class="fas fa-users"></i> Users</button>
+      <button class="admin-tab" data-atab="settings"><i class="fas fa-cog"></i> Settings</button>
+    </div>
+
+    <div class="admin-body" id="adminBody"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle"><i class="fas fa-edit"></i> <span>Edit</span></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="modal-btn ghost" id="modalCancel"><i class="fas fa-times"></i> Cancel</button>
+      <button class="modal-btn" id="modalConfirm"><i class="fas fa-check"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(function(){
+'use strict';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBIoqtazwdXXq9XnZBtXD2nUWU63bsKgGQ",
+  authDomain: "lock-a5bcc.firebaseapp.com",
+  databaseURL: "https://lock-a5bcc-default-rtdb.firebaseio.com",
+  projectId: "lock-a5bcc",
+  storageBucket: "lock-a5bcc.firebasestorage.app",
+  messagingSenderId: "37244177516",
+  appId: "1:37244177516:web:f50c385f86c283d90e1c49",
+  measurementId: "G-FRL2D4QR7K"
+};
+
+let db = null, fbReady = false;
+try{ firebase.initializeApp(firebaseConfig); db = firebase.database(); fbReady = true; }
+catch(err){ console.warn('⚠️ Firebase:', err.message); }
+
+const ADMIN_DEFAULT_PASSWORD = 'admin123';
+const SESSION_KEY = 'imuAdminSession';
+
+const DEFAULT_BUNDLES = [
+  { id:'b1', name:'Starter', amount:100,  price:50,  oldPrice:80,  icon:'fa-seedling', tag:'',        tagClass:'',        order:1 },
+  { id:'b2', name:'Basic',   amount:250,  price:110, oldPrice:180, icon:'fa-bolt',     tag:'Popular', tagClass:'popular', order:2 },
+  { id:'b3', name:'Premium', amount:500,  price:200, oldPrice:350, icon:'fa-crown',    tag:'Hot',     tagClass:'hot',     order:3 },
+  { id:'b4', name:'Mega',    amount:1000, price:380, oldPrice:700, icon:'fa-gem',      tag:'Best',    tagClass:'best',    order:4 }
+];
+
+let adminPassword = ADMIN_DEFAULT_PASSWORD;
+let authed = false;
+let currentTab = 'dashboard';
+let busy = false;
+
+const store = { users:{}, pendingNumbers:{}, purchases:{}, recharges:{}, bundles:{} };
+let listeners = [];
+const revealedOtps = new Set();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => String(v==null?'':v);
+const pad = n => String(n).padStart(2,'0');
+
+function fmtTime(ts){
+  if(!ts) return '—';
+  const d = new Date(Number(ts));
+  if(isNaN(d.getTime())) return '—';
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${String(d.getFullYear()).slice(-2)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fmtTimeFull(ts){
+  if(!ts) return '—';
+  const d = new Date(Number(ts));
+  if(isNaN(d.getTime())) return '—';
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function timeAgo(ts){
+  if(!ts) return '—';
+  const diff = Date.now() - Number(ts);
+  if(diff < 60000) return 'just now';
+  const m = Math.floor(diff/60000);
+  if(m < 60) return m + 'm ago';
+  const h = Math.floor(m/60);
+  if(h < 24) return h + 'h ago';
+  const d = Math.floor(h/24);
+  if(d < 7) return d + 'd ago';
+  return fmtTime(ts);
+}
+
+function showToast(msg, type){
+  const icons = { success:'fa-circle-check', error:'fa-circle-exclamation', warn:'fa-triangle-exclamation', info:'fa-circle-info' };
+  const el = document.createElement('div');
+  el.className = 'toast' + (type && type !== 'success' ? ' ' + type : '');
+  el.innerHTML = `<i class="fas ${icons[type] || icons.success}"></i><span>${esc(msg)}</span>`;
+  $('toastWrap').appendChild(el);
+  setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 340); }, 2800);
+}
+
+function copyText(txt, msg){
+  const done = () => showToast(msg || ('Copied: ' + txt), 'success');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt, done));
+  } else fallbackCopy(txt, done);
+}
+function fallbackCopy(txt, cb){
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); cb(); }catch(e){ showToast('Copy failed','error'); }
+  document.body.removeChild(ta);
+}
+function setConn(on){
+  const d = $('connDot'); if(!d) return;
+  d.classList.toggle('on', !!on);
+  $('connText').textContent = on ? 'online' : 'offline';
+}
+
+function renderIconHtml(icon, size){
+  const s = size || 22;
+  if(!icon) return `<i class="fas fa-gem" style="font-size:${s}px"></i>`;
+  const str = String(icon).trim();
+  if(/^(data:image|https?:\/\/)/i.test(str)) return `<img src="${esc(str)}" alt="">`;
+  if(str.startsWith('fa-')) return `<i class="${esc(str)}" style="font-size:${s}px"></i>`;
+  return `<span style="font-size:${s}px;line-height:1">${esc(str)}</span>`;
+}
+
+/* ============================================================
+   DATA LISTS
+   ============================================================ */
+function pendingList(){
+  return Object.keys(store.pendingNumbers || {})
+    .map(id => Object.assign({ id }, store.pendingNumbers[id]))
+    .sort((a,b) => (Number(b.createdAt)||0) - (Number(a.createdAt)||0));
+}
+function purchaseList(){
+  return Object.keys(store.purchases || {})
+    .map(id => Object.assign({ id }, store.purchases[id]))
+    .sort((a,b) => (Number(b.createdAt)||0) - (Number(a.createdAt)||0));
+}
+function rechargeList(){
+  return Object.keys(store.recharges || {})
+    .map(id => Object.assign({ id }, store.recharges[id]))
+    .sort((a,b) => (Number(b.createdAt)||0) - (Number(a.createdAt)||0));
+}
+function userList(){
+  return Object.keys(store.users || {})
+    .map(phone => {
+      const v = store.users[phone];
+      const o = (v && typeof v === 'object') ? v : {};
+      return { phone, balance: Number(o.balance)||0, lastActive: o.lastActive||0 };
+    })
+    .sort((a,b) => (Number(b.lastActive)||0) - (Number(a.lastActive)||0));
+}
+function bundleList(){
+  const v = store.bundles;
+  let arr = [];
+  if(v && typeof v === 'object' && Object.keys(v).length){
+    arr = Object.keys(v).map(k => Object.assign({ id:k }, v[k]));
+  } else {
+    arr = DEFAULT_BUNDLES.map(b => Object.assign({}, b));
+  }
+  return arr.sort((a,b) => (Number(a.order)||0) - (Number(b.order)||0));
+}
+
+function updateBadges(){
+  const nPending = pendingList().length;
+  const nOtps = purchaseList().length;
+  const nRech = rechargeList().filter(r => (r.status||'pending') === 'pending').length;
+  const nBund = bundleList().length;
+
+  const bn = $('badgeNumbers'); const bo = $('badgeOtps'); const br = $('badgeRecharges'); const bb = $('badgeBundles');
+  if(bn){ if(nPending>0){ bn.textContent = num(nPending); bn.style.display='inline-flex'; } else bn.style.display='none'; }
+  if(bo){ if(nOtps>0){ bo.textContent = num(nOtps); bo.style.display='inline-flex'; } else bo.style.display='none'; }
+  if(br){ if(nRech>0){ br.textContent = num(nRech); br.style.display='inline-flex'; } else br.style.display='none'; }
+  if(bb){ if(nBund>0){ bb.textContent = num(nBund); bb.style.display='inline-flex'; } else bb.style.display='none'; }
+}
+
+/* ============================================================
+   LIVE LISTENERS
+   ============================================================ */
+function detachListeners(){
+  listeners.forEach(l => { try{ l.ref.off('value', l.cb); }catch(e){} });
+  listeners = [];
+}
+function attach(path, key){
+  const ref = db.ref(path);
+  const cb = ref.on('value', snap => {
+    store[key] = snap.val() || {};
+    updateBadges();
+    if(currentTab === key || currentTab === 'dashboard') render();
+  }, err => {
+    console.warn('listener error', path, err);
+    showToast('Read error: ' + err.message, 'error');
+  });
+  listeners.push({ ref, cb });
+}
+function loadAll(){
+  if(!fbReady){ render(); return; }
+  db.ref('config/adminPassword').once('value').then(s => { if(s.val()) adminPassword = String(s.val()); }).catch(()=>{});
+  attach('users', 'users');
+  attach('pendingNumbers', 'pendingNumbers');
+  attach('purchases', 'purchases');
+  attach('rechargeRequests', 'recharges');
+  attach('config/bundles', 'bundles');
+  db.ref('.info/connected').on('value', s => setConn(!!s.val()));
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  if(!authed) return;
+  const body = $('adminBody'); if(!body) return;
+  const map = {
+    dashboard: viewDashboard,
+    bundles:   viewBundles,
+    recharges: viewRecharges,
+    numbers:   viewNumbers,
+    otps:      viewOtps,
+    users:     viewUsers,
+    settings:  viewSettings
+  };
+  body.innerHTML = (map[currentTab] || viewDashboard)();
+  bind();
+  if(currentTab === 'otps') scheduleOtpReveals();
+}
+
+/* ============================================================
+   ★ DASHBOARD ★
+   ============================================================ */
+function viewDashboard(){
+  const users = userList();
+  const totalDiamond = users.reduce((s,u) => s + u.balance, 0);
+  const pending = pendingList();
+  const purchases = purchaseList();
+  const recharges = rechargeList();
+  const pendingRecharges = recharges.filter(r => (r.status||'pending') === 'pending');
+  const approvedRecharges = recharges.filter(r => r.status === 'approved');
+  const revenue = purchases.reduce((s,p) => s + (Number(p.price)||0), 0);
+  const soldDiamond = purchases.reduce((s,p) => s + (Number(p.amount)||0), 0);
+  const rechargeTotal = approvedRecharges.reduce((s,r) => s + (Number(r.amount)||0), 0);
+  const missingOtp = purchases.filter(p => !(p.otp||'').trim()).length;
+
+  const dayAgo = Date.now() - 86400000;
+  const newUsers = users.filter(u => (u.lastActive||0) > dayAgo).length;
+  const newPurchases = purchases.filter(p => (p.createdAt||0) > dayAgo).length;
+  const newRecharges = recharges.filter(r => (r.createdAt||0) > dayAgo).length;
+
+  return `
+  <div class="admin-section-title"><i class="fas fa-chart-line"></i> Live Overview</div>
+  <div class="stats-grid cols-4">
+    <div class="stat-card blue">
+      <div class="st-top"><i class="fas fa-users"></i> Users</div>
+      <div class="st-val">${num(users.length)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-gem"></i> Diamonds</div>
+      <div class="st-val"><span class="dm">💎</span>${num(totalDiamond)}</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-mobile-screen"></i> Waiting</div>
+      <div class="st-val">${num(pending.length)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-key"></i> OTPs</div>
+      <div class="st-val">${num(purchases.length)}</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-bolt"></i> Pending</div>
+      <div class="st-val">${num(pendingRecharges.length)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-coins"></i> Recharged</div>
+      <div class="st-val">৳${num(rechargeTotal)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-bag-shopping"></i> Revenue</div>
+      <div class="st-val">৳${num(revenue)}</div>
+    </div>
+    <div class="stat-card red">
+      <div class="st-top"><i class="fas fa-triangle-exclamation"></i> Missing</div>
+      <div class="st-val">${num(missingOtp)}</div>
+    </div>
+  </div>
+
+  <div class="admin-section-title"><i class="fas fa-fire"></i> Last 24 Hours</div>
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="st-top"><i class="fas fa-user-plus"></i> New Users</div>
+      <div class="st-val">${num(newUsers)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-shopping-cart"></i> New Purchases</div>
+      <div class="st-val">${num(newPurchases)}</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-bolt"></i> New Recharges</div>
+      <div class="st-val">${num(newRecharges)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-diamond"></i> Diamonds Sold</div>
+      <div class="st-val"><span class="dm">💎</span>${num(soldDiamond)}</div>
+    </div>
+  </div>
+
+  ${pendingRecharges.length ? `
+  <div class="admin-section-title"><i class="fas fa-hourglass-half"></i> Pending Recharges (${num(pendingRecharges.length)})</div>
+  ${pendingRecharges.slice(0,3).map(r => `
+    <div class="item-card recharge-item">
+      <div class="item-head">
+        <div class="item-icon"><i class="fas fa-bolt"></i></div>
+        <div class="item-info">
+          <div class="item-label">PENDING RECHARGE</div>
+          <div class="item-phone">${esc(r.phone||'—')}</div>
+        </div>
+        <div class="item-amount">৳${num(r.amount||0)}</div>
+      </div>
+      <div class="item-actions">
+        <button class="admin-btn sm ok" data-approve="${esc(r.id)}"><i class="fas fa-check"></i> Accept</button>
+        <button class="admin-btn sm ghost" data-goto-recharges><i class="fas fa-arrow-right"></i> View All</button>
+      </div>
+    </div>
+  `).join('')}
+  ` : ''}
+
+  ${pending.length ? `
+  <div class="admin-section-title"><i class="fas fa-mobile-screen"></i> Waiting Numbers (${num(pending.length)})</div>
+  ${pending.slice(0,3).map(p => `
+    <div class="item-card waiting">
+      <div class="item-head">
+        <div class="item-icon"><i class="fas fa-mobile-screen"></i></div>
+        <div class="item-info">
+          <div class="item-label">WAITING OTP</div>
+          <div class="item-phone">${esc(p.phone||'—')}</div>
+        </div>
+        <button class="item-copy" data-copy-phone="${esc(p.phone||'')}"><i class="fas fa-copy"></i></button>
+      </div>
+      <div class="item-meta">
+        <div class="item-meta-left"><strong>${esc(p.bundleName||'—')}</strong> · <span class="dm">💎</span> ${num(p.amount||0)}</div>
+        <div class="item-time"><i class="fas fa-clock"></i> ${timeAgo(p.createdAt)}</div>
+      </div>
+    </div>
+  `).join('')}
+  ` : ''}
+
+  <div class="admin-section-title"><i class="fas fa-clock-rotate-left"></i> Latest OTP Purchases</div>
+  ${purchases.slice(0,3).map(p => {
+    const otp = String(p.otp||'').trim();
+    const hasOtp = otp.length > 0;
+    return `
+    <div class="admin-item">
+      <div class="ai-icon"><i class="fas fa-gem"></i></div>
+      <div class="ai-body">
+        <div class="ai-title">${esc(p.phone||'—')}</div>
+        <div class="ai-meta">
+          ${esc(p.bundleName||'—')} · <span class="dm">💎</span> ${num(p.amount||0)} · ৳${num(p.price||0)}<br>
+          OTP: <strong style="color:${hasOtp?'#FFD700':'#FF6B6B'}">${hasOtp?esc(otp):'—'}</strong> · ${timeAgo(p.createdAt)}
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state"><i class="fas fa-inbox"></i>No purchases yet</div>'}`;
+}
+
+/* ============================================================
+   ★ BUNDLES — ADD / EDIT / DELETE ★
+   ============================================================ */
+function viewBundles(){
+  const list = bundleList();
+  const items = list.map(b => `
+  <div class="admin-item">
+    <div class="ai-icon">${renderIconHtml(b.icon, 20)}</div>
+    <div class="ai-body">
+      <div class="ai-title">${esc(b.name)} — <span class="dm">💎</span> ${num(b.amount)}</div>
+      <div class="ai-meta">
+        Price: ৳${num(b.price)}${b.oldPrice?` · Old: ৳${num(b.oldPrice)}`:''}<br>
+        Order: ${num(b.order||0)}${b.tag?` · ${esc(b.tag)}`:''}
+      </div>
+    </div>
+    <div class="ai-actions">
+      <button class="admin-btn sm" data-edit-bundle="${esc(b.id)}" title="Edit"><i class="fas fa-pen"></i></button>
+      <button class="admin-btn sm danger" data-del-bundle="${esc(b.id)}" title="Delete"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>`).join('');
+
+  return `
+  <div class="admin-section-title"><i class="fas fa-gem"></i> Diamond Bundles</div>
+
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-gem"></i> Total Bundles</div>
+      <div class="st-val">${num(list.length)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-diamond"></i> Cheapest</div>
+      <div class="st-val">৳${num(list.reduce((min,b)=>Math.min(min, Number(b.price)||999999), 0))}</div>
+    </div>
+  </div>
+
+  <button class="admin-btn full ok" data-action="add-bundle" style="margin-bottom:12px;">
+    <i class="fas fa-plus"></i> Add New Bundle
+  </button>
+
+  <div class="filter-bar">
+    <input type="text" id="filterBundles" placeholder="Search bundle name...">
+  </div>
+
+  <div id="bundlesList">
+    ${items || '<div class="empty-state"><i class="fas fa-inbox"></i>No bundles yet</div>'}
+  </div>`;
+}
+
+function openBundleModal(bundle){
+  const b = bundle || {
+    id:'',
+    name:'',
+    amount:100,
+    price:50,
+    oldPrice:0,
+    icon:'fa-gem',
+    tag:'',
+    tagClass:'',
+    order:(bundleList().length + 1)
+  };
+
+  const quickIcons = ['fa-gem','fa-crown','fa-bolt','fa-star','fa-seedling','fa-fire','fa-diamond','fa-medal','fa-trophy','fa-rocket','💎','👑','⭐','🔥','⚡','🎁','💰','🪙','🏆'];
+
+  openModal({
+    title: b.id ? 'Edit Bundle' : 'New Bundle',
+    icon: b.id ? 'fa-pen' : 'fa-plus',
+    sub: b.id ? `Editing <strong>${esc(b.name)}</strong>` : 'Create a new diamond package',
+    body: `
+      <label class="modal-label"><i class="fas fa-tag"></i> Bundle Name</label>
+      <input type="text" class="modal-input" id="bName" value="${esc(b.name)}" placeholder="e.g. Starter Pack">
+
+      <div class="row-2">
+        <div>
+          <label class="modal-label"><i class="fas fa-gem"></i> Diamonds</label>
+          <input type="number" class="modal-input" id="bAmount" value="${b.amount}" min="1" inputmode="numeric">
+        </div>
+        <div>
+          <label class="modal-label"><i class="fas fa-coins"></i> Price (৳)</label>
+          <input type="number" class="modal-input" id="bPrice" value="${b.price}" min="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div>
+          <label class="modal-label"><i class="fas fa-tags"></i> Old Price (৳)</label>
+          <input type="number" class="modal-input" id="bOldPrice" value="${b.oldPrice||0}" min="0" inputmode="numeric">
+        </div>
+        <div>
+          <label class="modal-label"><i class="fas fa-sort"></i> Order</label>
+          <input type="number" class="modal-input" id="bOrder" value="${b.order||0}" min="0" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div>
+          <label class="modal-label"><i class="fas fa-certificate"></i> Badge Text</label>
+          <input type="text" class="modal-input" id="bTag" value="${esc(b.tag||'')}" placeholder="e.g. Hot">
+        </div>
+        <div>
+          <label class="modal-label"><i class="fas fa-palette"></i> Badge Style</label>
+          <select class="modal-input" id="bTagClass" style="padding:13px 15px;">
+            <option value="" ${b.tagClass===''?'selected':''}>None</option>
+            <option value="hot" ${b.tagClass==='hot'?'selected':''}>Hot (Red)</option>
+            <option value="popular" ${b.tagClass==='popular'?'selected':''}>Popular (Purple)</option>
+            <option value="best" ${b.tagClass==='best'?'selected':''}>Best (Green)</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="modal-label" style="margin-top:6px;"><i class="fas fa-icons"></i> Icon</label>
+      <input type="text" class="modal-input" id="bIcon" value="${esc(b.icon)}" placeholder="fa-gem or 💎 or URL">
+      <div class="icon-picker">
+        ${quickIcons.map(ic => `<div class="icon-pick ${ic===b.icon?'active':''}" data-icon="${esc(ic)}">${renderIconHtml(ic, 14)}</div>`).join('')}
+      </div>
+    `,
+    onSave: () => {
+      const name = ($('bName')?.value || '').trim();
+      const amount = parseInt($('bAmount')?.value, 10) || 0;
+      const price = parseInt($('bPrice')?.value, 10) || 0;
+      const oldPrice = parseInt($('bOldPrice')?.value, 10) || 0;
+      const order = parseInt($('bOrder')?.value, 10) || 0;
+      const tag = ($('bTag')?.value || '').trim();
+      const tagClass = $('bTagClass')?.value || '';
+      const icon = ($('bIcon')?.value || '').trim() || 'fa-gem';
+
+      if(!name){ showToast('Enter a bundle name', 'warn'); return false; }
+      if(!amount){ showToast('Enter diamond amount', 'warn'); return false; }
+      if(!price){ showToast('Enter price', 'warn'); return false; }
+
+      const data = {
+        id: b.id || ('b_' + Date.now()),
+        name, amount, price, oldPrice, order, tag, tagClass, icon
+      };
+
+      if(fbReady){
+        db.ref('config/bundles/' + data.id).set(data)
+          .then(() => showToast('Bundle saved', 'success'))
+          .catch(err => showToast('Save failed: ' + err.message, 'error'));
+      } else {
+        showToast('Firebase offline — saved locally', 'warn');
+      }
+      return true;
+    }
+  });
+
+  /* icon picker */
+  setTimeout(() => {
+    document.querySelectorAll('.icon-pick').forEach(el => {
+      el.onclick = () => {
+        document.querySelectorAll('.icon-pick').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        const inp = $('bIcon');
+        if(inp) inp.value = el.dataset.icon;
+      };
+    });
+  }, 50);
+}
+
+function deleteBundle(id){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Delete this bundle?')) return;
+  db.ref('config/bundles/' + id).remove()
+    .then(() => showToast('Bundle deleted', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+/* ============================================================
+   ★ RECHARGES ★
+   ============================================================ */
+function viewRecharges(){
+  const list = rechargeList();
+  const pending = list.filter(r => (r.status||'pending') === 'pending').length;
+  const approved = list.filter(r => r.status === 'approved').length;
+  const rejected = list.filter(r => r.status === 'rejected').length;
+  const approvedAmount = list.filter(r => r.status === 'approved').reduce((s,r) => s + (Number(r.amount)||0), 0);
+
+  return `
+  <div class="admin-section-title"><i class="fas fa-bolt"></i> Recharge Requests</div>
+
+  <div class="stats-grid cols-4">
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-hourglass-half"></i> Pending</div>
+      <div class="st-val">${num(pending)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-circle-check"></i> Approved</div>
+      <div class="st-val">${num(approved)}</div>
+    </div>
+    <div class="stat-card red">
+      <div class="st-top"><i class="fas fa-circle-xmark"></i> Rejected</div>
+      <div class="st-val">${num(rejected)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-coins"></i> Approved ৳</div>
+      <div class="st-val">৳${num(approvedAmount)}</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="filterRecharge" placeholder="Search phone / trxID / sender...">
+    <select id="filterStatus">
+      <option value="all">All Status</option>
+      <option value="pending">Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+    </select>
+  </div>
+
+  <div id="rechargeList">
+    ${list.length ? list.map(r => rechargeItemHtml(r)).join('') : '<div class="empty-state"><i class="fas fa-inbox"></i>No recharge requests yet</div>'}
+  </div>`;
+}
+
+function rechargeItemHtml(r){
+  const st = r.status || 'pending';
+  const isPending = st === 'pending';
+  const cls = st === 'approved' ? 'recharge-item' : st === 'rejected' ? 'rejected-item' : 'recharge-item';
+  const pillCls = st === 'approved' ? 'done' : st === 'rejected' ? 'rejected' : 'waiting';
+  const pillIc = st === 'approved' ? 'fa-circle-check' : st === 'rejected' ? 'fa-circle-xmark' : 'fa-hourglass-half';
+  const pillTxt = st === 'approved' ? 'Approved' : st === 'rejected' ? 'Rejected' : 'Pending';
+
+  return `
+  <div class="item-card ${cls}" data-recharge-id="${esc(r.id)}" data-status="${st}">
+    <div class="item-head">
+      <div class="item-icon"><i class="fas fa-bolt"></i></div>
+      <div class="item-info">
+        <div class="item-label">CUSTOMER NUMBER</div>
+        <div class="item-phone">${esc(r.phone || '—')}</div>
+      </div>
+      <button class="item-copy" data-copy-phone="${esc(r.phone||'')}" title="Copy number">
+        <i class="fas fa-copy"></i>
+      </button>
+    </div>
+
+    <div class="item-meta" style="margin-top:8px;">
+      <div class="item-meta-left">
+        Amount: <span class="item-amount">৳${num(r.amount||0)}</span>
+        <span class="status-pill ${pillCls}" style="margin-left:6px;">
+          <i class="fas ${pillIc}"></i> ${pillTxt}
+        </span>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="rd-cell">
+        <div class="rd-k">Method</div>
+        <div class="rd-v">${esc(r.method || '—')}</div>
+      </div>
+      <div class="rd-cell">
+        <div class="rd-k">Sender</div>
+        <div class="rd-v">${esc(r.senderNumber || '—')}</div>
+      </div>
+      <div class="rd-cell" style="grid-column:span 2;">
+        <div class="rd-k">Transaction ID</div>
+        <div class="rd-v" style="letter-spacing:1px;">${esc(r.transactionId || '—')}</div>
+      </div>
+    </div>
+
+    <div class="item-meta" style="margin-top:8px;">
+      <div class="item-meta-left" style="font-size:10px;">
+        <i class="fas fa-clock" style="color:#C9971C;"></i> ${fmtTimeFull(r.createdAt)}
+        ${r.approvedAt ? `<br><span style="color:#4ADE80;"><i class="fas fa-check"></i> Approved ${timeAgo(r.approvedAt)}</span>` : ''}
+        ${r.rejectedAt ? `<br><span style="color:#FF6B6B;"><i class="fas fa-times"></i> Rejected ${timeAgo(r.rejectedAt)}</span>` : ''}
+      </div>
+    </div>
+
+    <div class="item-actions">
+      ${isPending ? `
+        <button class="admin-btn sm ok" data-approve="${esc(r.id)}"><i class="fas fa-check"></i> Accept</button>
+        <button class="admin-btn sm danger" data-reject="${esc(r.id)}"><i class="fas fa-times"></i> Reject</button>
+      ` : ''}
+      <button class="admin-btn sm ghost" data-del-recharge="${esc(r.id)}"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>`;
+}
+
+function approveRecharge(id){
+  const r = store.recharges[id];
+  if(!r){ showToast('Request not found', 'error'); return; }
+  if((r.status||'pending') === 'approved'){ showToast('Already approved', 'warn'); return; }
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(busy) return;
+
+  const amount = Number(r.amount) || 0;
+  if(!confirm(`Accept this recharge?\n\nNumber: ${r.phone}\nAmount: ৳${amount}\nMethod: ${r.method||'—'}\nTrxID: ${r.transactionId||'—'}\n\n৳${amount} will be added to user's balance.`)) return;
+
+  busy = true;
+  const btn = document.querySelector(`[data-approve="${cssEscape(id)}"]`);
+  if(btn){ btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+  db.ref('rechargeRequests/' + id).update({ status: 'approved', approvedAt: Date.now() })
+    .then(() => db.ref('users/' + r.phone + '/balance').transaction(cur => (Number(cur)||0) + amount))
+    .then(() => { showToast('Approved — ৳' + amount + ' added', 'success'); })
+    .catch(err => {
+      console.error(err);
+      showToast('Error: ' + err.message, 'error');
+      if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Accept'; }
+    })
+    .finally(() => { busy = false; });
+}
+
+function rejectRecharge(id){
+  const r = store.recharges[id];
+  if(!r) return;
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Reject this recharge?')) return;
+  db.ref('rechargeRequests/' + id).update({ status: 'rejected', rejectedAt: Date.now() })
+    .then(() => showToast('Rejected', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+function deleteRecharge(id){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Delete this recharge record permanently?')) return;
+  db.ref('rechargeRequests/' + id).remove()
+    .then(() => showToast('Deleted', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+/* ============================================================
+   ★ NUMBERS ★
+   ============================================================ */
+function viewNumbers(){
+  const list = pendingList();
+  const items = list.map(p => `
+    <div class="item-card waiting" data-buy-id="${esc(p.id)}">
+      <div class="item-head">
+        <div class="item-icon"><i class="fas fa-mobile-screen"></i></div>
+        <div class="item-info">
+          <div class="item-label">CUSTOMER NUMBER</div>
+          <div class="item-phone">${esc(p.phone || '—')}</div>
+        </div>
+        <button class="item-copy" data-copy-phone="${esc(p.phone||'')}"><i class="fas fa-copy"></i></button>
+      </div>
+      <div class="item-meta">
+        <div class="item-meta-left">
+          <strong>${esc(p.bundleName||'—')}</strong> · <span class="dm">💎</span> ${num(p.amount||0)} · ৳${num(p.price||0)}
+          <span class="status-pill waiting" style="margin-left:6px;"><i class="fas fa-hourglass-half"></i> Waiting OTP</span>
+        </div>
+        <div class="item-time"><i class="fas fa-clock"></i> ${timeAgo(p.createdAt)}</div>
+      </div>
+      <div class="item-actions">
+        <button class="admin-btn sm ghost" data-copy-phone="${esc(p.phone||'')}"><i class="fas fa-copy"></i> Copy</button>
+        <button class="admin-btn sm danger" data-del-pending="${esc(p.id)}"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="admin-section-title"><i class="fas fa-mobile-screen"></i> Waiting Numbers</div>
+
+  <div class="stats-grid">
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-hourglass-half"></i> Waiting</div>
+      <div class="st-val">${num(list.length)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-circle-check"></i> Completed</div>
+      <div class="st-val">${num(purchaseList().length)}</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="filterNumbers" placeholder="Search phone / bundle...">
+  </div>
+
+  <div id="numbersList">
+    ${items || '<div class="empty-state"><i class="fas fa-inbox"></i>No numbers waiting</div>'}
+  </div>`;
+}
+
+function deletePending(id){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Delete this pending number?')) return;
+  db.ref('pendingNumbers/' + id).remove()
+    .then(() => showToast('Deleted', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+/* ============================================================
+   ★ OTP LIST ★
+   ============================================================ */
+function viewOtps(){
+  const list = purchaseList();
+  const withOtp = list.filter(p => (p.otp||'').trim()).length;
+  const missing = list.length - withOtp;
+
+  const items = list.map(p => {
+    const otp = String(p.otp || '').trim();
+    const hasOtp = otp.length > 0;
+    const alreadyRevealed = revealedOtps.has(p.id) || !hasOtp;
+
+    return `
+    <div class="item-card" data-buy-id="${esc(p.id)}">
+      <div class="item-head">
+        <div class="item-icon"><i class="fas fa-mobile-screen"></i></div>
+        <div class="item-info">
+          <div class="item-label">CUSTOMER NUMBER</div>
+          <div class="item-phone">${esc(p.phone || '—')}</div>
+        </div>
+        <button class="item-copy" data-copy-phone="${esc(p.phone||'')}"><i class="fas fa-copy"></i></button>
+      </div>
+
+      ${hasOtp && !alreadyRevealed ? `
+        <div class="item-reading visible" data-loading-for="${esc(p.id)}">
+          <span>Reading OTP</span>
+          <span class="dots"><span></span><span></span><span></span></span>
+        </div>
+      ` : ''}
+
+      <div class="item-otp ${alreadyRevealed?'revealed':''}" data-otp-for="${esc(p.id)}">
+        <div class="item-otp-icon"><i class="fas fa-key"></i></div>
+        <div class="item-otp-body">
+          <div class="item-otp-label">OTP CODE</div>
+          <div class="item-otp-code">${hasOtp ? esc(otp) : 'NO OTP'}</div>
+        </div>
+        ${hasOtp ? `<button class="item-otp-copy" data-copy-otp="${esc(otp)}"><i class="fas fa-copy"></i></button>` : ''}
+      </div>
+
+      <div class="item-meta">
+        <div class="item-meta-left">
+          <strong>${esc(p.bundleName||'—')}</strong> · <span class="dm">💎</span> ${num(p.amount||0)} · ৳${num(p.price||0)}
+          <span class="status-pill done" style="margin-left:6px;"><i class="fas fa-circle-check"></i> Verified</span>
+        </div>
+        <div class="item-time"><i class="fas fa-clock"></i> ${timeAgo(p.createdAt)}</div>
+      </div>
+
+      <div class="item-actions">
+        <button class="admin-btn sm ghost" data-copy-phone="${esc(p.phone||'')}"><i class="fas fa-copy"></i> Number</button>
+        ${hasOtp ? `<button class="admin-btn sm ghost" data-copy-otp="${esc(otp)}"><i class="fas fa-copy"></i> OTP</button>` : ''}
+        <button class="admin-btn sm danger" data-del-purchase="${esc(p.id)}"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="admin-section-title"><i class="fas fa-key"></i> OTP List — Completed</div>
+
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-key"></i> Total</div>
+      <div class="st-val">${num(list.length)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-circle-check"></i> With OTP</div>
+      <div class="st-val">${num(withOtp)}</div>
+    </div>
+    <div class="stat-card red">
+      <div class="st-top"><i class="fas fa-circle-xmark"></i> Missing</div>
+      <div class="st-val">${num(missing)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-diamond"></i> Sold</div>
+      <div class="st-val"><span class="dm">💎</span>${num(list.reduce((s,p)=>s+(Number(p.amount)||0),0))}</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="filterOtps" placeholder="Search phone / OTP / bundle...">
+  </div>
+
+  <div id="otpsList">
+    ${items || '<div class="empty-state"><i class="fas fa-inbox"></i>No completed purchases yet</div>'}
+  </div>`;
+}
+
+function scheduleOtpReveals(){
+  const cards = document.querySelectorAll('.item-card[data-buy-id]');
+  cards.forEach((card, index) => {
+    const id = card.dataset.buyId;
+    const otpBlock = card.querySelector(`.item-otp[data-otp-for="${cssEscape(id)}"]`);
+    const loadingEl = card.querySelector(`.item-reading[data-loading-for="${cssEscape(id)}"]`);
+    if(!otpBlock) return;
+    if(otpBlock.classList.contains('revealed')){
+      revealedOtps.add(id);
+      if(loadingEl) loadingEl.remove();
+      return;
+    }
+    const delay = 120 + (index * 40);
+    setTimeout(() => {
+      if(loadingEl){
+        loadingEl.classList.remove('visible');
+        setTimeout(() => { try{ loadingEl.remove(); }catch(e){} }, 180);
+      }
+      otpBlock.classList.add('revealed');
+      revealedOtps.add(id);
+    }, delay);
+  });
+}
+function cssEscape(s){
+  return String(s).replace(/([!"#$%&'()*+,./:;<=>?@\[\\\]^`{|}~])/g, '\\$1');
+}
+
+function deletePurchase(id){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Delete this purchase record?')) return;
+  revealedOtps.delete(id);
+  db.ref('purchases/' + id).remove()
+    .then(() => showToast('Deleted', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+/* ============================================================
+   ★ USERS ★
+   ============================================================ */
+function viewUsers(){
+  const list = userList();
+  const totalBalance = list.reduce((s,u) => s + u.balance, 0);
+
+  const items = list.map(u => `
+  <div class="admin-item">
+    <div class="ai-icon"><i class="fas fa-user"></i></div>
+    <div class="ai-body">
+      <div class="ai-title">${esc(u.phone)}</div>
+      <div class="ai-meta">
+        Balance: <strong><span class="dm">💎</span> ${num(u.balance)}</strong><br>
+        Active: ${timeAgo(u.lastActive)}
+      </div>
+    </div>
+    <div class="ai-actions">
+      <button class="admin-btn sm ok" data-add-balance="${esc(u.phone)}" title="Add"><i class="fas fa-plus"></i></button>
+      <button class="admin-btn sm" data-edit-user="${esc(u.phone)}" title="Edit"><i class="fas fa-pen"></i></button>
+      <button class="admin-btn sm danger" data-del-user="${esc(u.phone)}" title="Delete"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>`).join('');
+
+  return `
+  <div class="admin-section-title"><i class="fas fa-users"></i> Users</div>
+
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="st-top"><i class="fas fa-users"></i> Total Users</div>
+      <div class="st-val">${num(list.length)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-gem"></i> Total Diamonds</div>
+      <div class="st-val"><span class="dm">💎</span>${num(totalBalance)}</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="filterUser" placeholder="Search by number...">
+  </div>
+
+  <div id="userList">
+    ${items || '<div class="empty-state"><i class="fas fa-inbox"></i>No users yet</div>'}
+  </div>`;
+}
+
+function addUserBalance(phone){
+  const cur = (store.users[phone] || {}).balance || 0;
+  openModal({
+    title: 'Add Diamonds',
+    icon: 'fa-plus',
+    sub: `Add diamonds to <strong>${esc(phone)}</strong><br>Current: <strong>💎 ${num(cur)}</strong>`,
+    body: `
+      <label class="modal-label"><i class="fas fa-gem"></i> Amount to add</label>
+      <input type="number" class="modal-input" id="modalInputVal" value="100" min="1" inputmode="numeric">
+    `,
+    onSave: () => {
+      const n = parseInt($('modalInputVal').value, 10);
+      if(isNaN(n) || n === 0){ showToast('Enter a valid number', 'error'); return false; }
+      db.ref('users/' + phone + '/balance').transaction(c => Math.max(0, (Number(c)||0) + n))
+        .then(() => showToast('Added 💎 ' + n + ' to ' + phone, 'success'))
+        .catch(err => showToast('Error: ' + err.message, 'error'));
+      return true;
+    }
+  });
+}
+function editUserBalance(phone){
+  const cur = (store.users[phone] || {}).balance || 0;
+  openModal({
+    title: 'Set Balance',
+    icon: 'fa-pen',
+    sub: `Set new balance for <strong>${esc(phone)}</strong>`,
+    body: `
+      <label class="modal-label"><i class="fas fa-gem"></i> New balance</label>
+      <input type="number" class="modal-input" id="modalInputVal" value="${cur}" min="0" inputmode="numeric">
+    `,
+    onSave: () => {
+      const n = parseInt($('modalInputVal').value, 10);
+      if(isNaN(n) || n < 0){ showToast('Enter a valid number', 'error'); return false; }
+      db.ref('users/' + phone + '/balance').set(n)
+        .then(() => showToast('Balance set to 💎 ' + n, 'success'))
+        .catch(err => showToast('Error: ' + err.message, 'error'));
+      return true;
+    }
+  });
+}
+function deleteUser(phone){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Delete user ' + phone + ' and their balance?')) return;
+  db.ref('users/' + phone).remove()
+    .then(() => showToast('User deleted', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+/* ============================================================
+   ★ SETTINGS ★
+   ============================================================ */
+function viewSettings(){
+  return `
+  <div class="admin-section-title"><i class="fas fa-key"></i> Change Admin Password</div>
+  <div style="padding:12px;border-radius:13px;background:rgba(255,215,0,.04);border:1px solid var(--line-3);margin-bottom:14px;">
+    <label class="modal-label"><i class="fas fa-lock"></i> Current Password</label>
+    <input type="password" class="modal-input" id="setOldPwd" autocomplete="off">
+    <label class="modal-label"><i class="fas fa-lock"></i> New Password</label>
+    <input type="password" class="modal-input" id="setNewPwd" autocomplete="off">
+    <label class="modal-label"><i class="fas fa-lock"></i> Confirm New Password</label>
+    <input type="password" class="modal-input" id="setNewPwd2" autocomplete="off">
+    <button class="admin-btn full ok" data-action="change-password"><i class="fas fa-save"></i> Change Password</button>
+  </div>
+
+  <div class="admin-section-title"><i class="fas fa-database"></i> Firebase Status</div>
+  <div class="admin-item">
+    <div class="ai-icon"><i class="fas ${fbReady?'fa-circle-check':'fa-circle-xmark'}" style="color:${fbReady?'#4ADE80':'#FF6B6B'}"></i></div>
+    <div class="ai-body">
+      <div class="ai-title">${fbReady ? 'Connected' : 'Not Configured'}</div>
+      <div class="ai-meta">${esc(firebaseConfig.databaseURL || '')}</div>
+    </div>
+  </div>
+
+  <div class="admin-section-title"><i class="fas fa-database"></i> Data Counts</div>
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="st-top"><i class="fas fa-users"></i> Users</div>
+      <div class="st-val">${num(Object.keys(store.users||{}).length)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-gem"></i> Bundles</div>
+      <div class="st-val">${num(bundleList().length)}</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-mobile-screen"></i> Pending</div>
+      <div class="st-val">${num(Object.keys(store.pendingNumbers||{}).length)}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="st-top"><i class="fas fa-key"></i> Purchases</div>
+      <div class="st-val">${num(Object.keys(store.purchases||{}).length)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="st-top"><i class="fas fa-bolt"></i> Recharges</div>
+      <div class="st-val">${num(Object.keys(store.recharges||{}).length)}</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="st-top"><i class="fas fa-hourglass-half"></i> Pending ৳</div>
+      <div class="st-val">${num(rechargeList().filter(r=>(r.status||'pending')==='pending').length)}</div>
+    </div>
+  </div>
+
+  <div class="admin-section-title"><i class="fas fa-triangle-exclamation" style="color:#FFB74D"></i> Maintenance</div>
+  <button class="admin-btn full ghost" data-action="export-data"><i class="fas fa-download"></i> Export Data (JSON)</button>
+  <div style="height:8px;"></div>
+  <button class="admin-btn full ghost" data-action="reset-bundles"><i class="fas fa-rotate"></i> Reset Bundles to Default</button>
+  <div style="height:8px;"></div>
+  <button class="admin-btn full danger" data-action="clear-pending"><i class="fas fa-broom"></i> Clear All Pending Numbers</button>
+
+  <div class="admin-section-title"><i class="fas fa-shield-halved"></i> Session</div>
+  <button class="admin-btn full danger" data-action="logout"><i class="fas fa-right-from-bracket"></i> Logout</button>
+
+  <div style="margin-top:20px;padding:12px;border-radius:13px;background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.25);">
+    <div style="font-size:11px;color:#FFB4A8;line-height:1.6;">
+      <strong style="color:#FF6B6B;">Default password:</strong> admin123<br>
+      Change it immediately after first login.
+    </div>
+  </div>`;
+}
+
+function changePassword(){
+  const oldP = $('setOldPwd')?.value || '';
+  const newP = $('setNewPwd')?.value || '';
+  const newP2 = $('setNewPwd2')?.value || '';
+  if(oldP !== adminPassword){ showToast('Current password is wrong', 'error'); return; }
+  if(newP.length < 4){ showToast('Min 4 characters', 'warn'); return; }
+  if(newP !== newP2){ showToast('Passwords do not match', 'error'); return; }
+  adminPassword = newP;
+  if(fbReady){
+    db.ref('config/adminPassword').set(newP)
+      .then(() => showToast('Password changed', 'success'))
+      .catch(err => showToast('Save failed: ' + err.message, 'error'));
+  } else {
+    showToast('Changed locally only', 'warn');
+  }
+  $('setOldPwd').value = ''; $('setNewPwd').value = ''; $('setNewPwd2').value = '';
+}
+
+function exportData(){
+  const data = {
+    exportedAt: new Date().toISOString(),
+    users: store.users,
+    bundles: store.bundles,
+    pendingNumbers: store.pendingNumbers,
+    purchases: store.purchases,
+    recharges: store.recharges
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'imu-diamond-export-' + Date.now() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Data exported', 'success');
+}
+
+function clearAllPending(){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  const n = pendingList().length;
+  if(!n){ showToast('No pending numbers', 'info'); return; }
+  if(!confirm(`Delete ALL ${n} pending numbers? This cannot be undone.`)) return;
+  db.ref('pendingNumbers').remove()
+    .then(() => showToast('Cleared ' + n + ' pending numbers', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+function resetBundles(){
+  if(!fbReady){ showToast('Firebase offline', 'error'); return; }
+  if(!confirm('Reset bundles to defaults? This overwrites your current bundle list.')) return;
+  const out = {};
+  DEFAULT_BUNDLES.forEach(b => { out[b.id] = Object.assign({}, b); });
+  db.ref('config/bundles').set(out)
+    .then(() => showToast('Bundles reset to default', 'success'))
+    .catch(err => showToast('Error: ' + err.message, 'error'));
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+let modalOnSave = null;
+function openModal({ title, icon, sub, body, onSave }){
+  $('modalTitle').innerHTML = `<i class="fas ${icon}"></i> <span>${title}</span>`;
+  $('modalSub').innerHTML = sub;
+  $('modalBody').innerHTML = body;
+  modalOnSave = onSave;
+  $('modalOverlay').classList.add('active');
+  setTimeout(() => {
+    const inp = $('modalInputVal') || $('bName');
+    if(inp){ inp.focus(); inp.select?.(); }
+  }, 200);
+}
+function closeModal(){
+  $('modalOverlay').classList.remove('active');
+  modalOnSave = null;
+}
+
+$('modalCancel').addEventListener('click', closeModal);
+$('modalOverlay').addEventListener('click', e => { if(e.target === $('modalOverlay')) closeModal(); });
+$('modalConfirm').addEventListener('click', () => {
+  if(modalOnSave){
+    const ok = modalOnSave();
+    if(ok !== false) closeModal();
+  } else closeModal();
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && $('modalOverlay').classList.contains('active')) closeModal();
+  if(e.key === 'Enter' && $('modalOverlay').classList.contains('active') && !e.target.matches('textarea')) {
+    if(modalOnSave){
+      const ok = modalOnSave();
+      if(ok !== false) closeModal();
+    }
+  }
+});
+
+/* ============================================================
+   BIND
+   ============================================================ */
+function bind(){
+  document.querySelectorAll('[data-copy-phone]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const v = b.dataset.copyPhone;
+    if(!v) return;
+    copyText(v, 'Number copied: ' + v);
+  });
+  document.querySelectorAll('[data-copy-otp]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const v = b.dataset.copyOtp;
+    if(!v) return;
+    copyText(v, 'OTP copied: ' + v);
+  });
+
+  document.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => approveRecharge(b.dataset.approve));
+  document.querySelectorAll('[data-reject]').forEach(b => b.onclick = () => rejectRecharge(b.dataset.reject));
+  document.querySelectorAll('[data-del-recharge]').forEach(b => b.onclick = () => deleteRecharge(b.dataset.delRecharge));
+
+  document.querySelectorAll('[data-del-pending]').forEach(b => b.onclick = () => deletePending(b.dataset.delPending));
+  document.querySelectorAll('[data-del-purchase]').forEach(b => b.onclick = () => deletePurchase(b.dataset.delPurchase));
+  document.querySelectorAll('[data-edit-user]').forEach(b => b.onclick = () => editUserBalance(b.dataset.editUser));
+  document.querySelectorAll('[data-add-balance]').forEach(b => b.onclick = () => addUserBalance(b.dataset.addBalance));
+  document.querySelectorAll('[data-del-user]').forEach(b => b.onclick = () => deleteUser(b.dataset.delUser));
+
+  /* Bundles */
+  document.querySelectorAll('[data-action="add-bundle"]').forEach(b => b.onclick = () => openBundleModal(null));
+  document.querySelectorAll('[data-edit-bundle]').forEach(b => b.onclick = () => {
+    const found = bundleList().find(x => x.id === b.dataset.editBundle);
+    if(found) openBundleModal(found);
+  });
+  document.querySelectorAll('[data-del-bundle]').forEach(b => b.onclick = () => deleteBundle(b.dataset.delBundle));
+
+  /* Settings */
+  document.querySelectorAll('[data-action="change-password"]').forEach(b => b.onclick = changePassword);
+  document.querySelectorAll('[data-action="export-data"]').forEach(b => b.onclick = exportData);
+  document.querySelectorAll('[data-action="clear-pending"]').forEach(b => b.onclick = clearAllPending);
+  document.querySelectorAll('[data-action="reset-bundles"]').forEach(b => b.onclick = resetBundles);
+  document.querySelectorAll('[data-action="logout"]').forEach(b => b.onclick = logout);
+
+  document.querySelectorAll('[data-goto-recharges]').forEach(b => b.onclick = () => switchTab('recharges'));
+
+  const fr = $('filterRecharge');
+  if(fr) fr.oninput = () => filterRecharges();
+  const fs = $('filterStatus');
+  if(fs) fs.onchange = () => filterRecharges();
+  const fn = $('filterNumbers');
+  if(fn) fn.oninput = () => filterList('numbersList', fn.value);
+  const fo = $('filterOtps');
+  if(fo) fo.oninput = () => filterList('otpsList', fo.value);
+  const fu = $('filterUser');
+  if(fu) fu.oninput = () => filterList('userList', fu.value);
+  const fb = $('filterBundles');
+  if(fb) fb.oninput = () => filterList('bundlesList', fb.value);
+}
+
+function filterRecharges(){
+  const q = ($('filterRecharge')?.value || '').trim().toLowerCase();
+  const st = $('filterStatus')?.value || 'all';
+  document.querySelectorAll('#rechargeList .item-card').forEach(item => {
+    const matchQ = !q || item.textContent.toLowerCase().includes(q);
+    const matchSt = st === 'all' || item.dataset.status === st;
+    item.style.display = (matchQ && matchSt) ? '' : 'none';
+  });
+}
+
+function filterList(containerId, q){
+  const ql = String(q||'').trim().toLowerCase();
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.querySelectorAll('.item-card, .admin-item').forEach(item => {
+    item.style.display = (!ql || item.textContent.toLowerCase().includes(ql)) ? '' : 'none';
+  });
+}
+
+/* ============================================================
+   TABS + AUTH
+   ============================================================ */
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(x => x.classList.toggle('active', x.dataset.atab === tab));
+  render();
+}
+
+document.querySelectorAll('.admin-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.atab));
+});
+
+function login(){
+  const val = ($('adminPasswordInput')?.value || '');
+  if(val === adminPassword){
+    authed = true;
+    try{ sessionStorage.setItem(SESSION_KEY, '1'); }catch(e){}
+    $('loginErr').textContent = '';
+    $('adminPasswordInput').value = '';
+    $('adminLogin').style.display = 'none';
+    $('adminPanel').classList.add('active');
+    detachListeners();
+    loadAll();
+    switchTab('dashboard');
+    showToast('Login successful', 'success');
+  } else {
+    $('loginErr').textContent = 'Wrong password';
+    $('adminPasswordInput').value = '';
+    $('adminPasswordInput').focus();
+    showToast('Wrong password', 'error');
+  }
+}
+
+function logout(){
+  authed = false;
+  try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+  detachListeners();
+  store.users = {}; store.pendingNumbers = {}; store.purchases = {}; store.recharges = {}; store.bundles = {};
+  revealedOtps.clear();
+  $('adminPanel').classList.remove('active');
+  $('adminLogin').style.display = 'flex';
+  $('adminBody').innerHTML = '';
+  showToast('Logged out', 'success');
+}
+
+$('adminLoginBtn').addEventListener('click', login);
+$('adminPasswordInput').addEventListener('keydown', e => { if(e.key === 'Enter') login(); });
+$('adminCloseBtn').addEventListener('click', () => { if(confirm('Logout from admin panel?')) logout(); });
+$('refreshBtn').addEventListener('click', () => {
+  revealedOtps.clear();
+  detachListeners();
+  loadAll();
+  render();
+  showToast('Refreshed', 'success');
+});
+
+(function boot(){
+  if(fbReady){
+    db.ref('.info/connected').on('value', s => setConn(!!s.val()));
+  } else {
+    setConn(false);
+    setTimeout(() => showToast('Firebase not connected', 'warn'), 600);
+  }
+  let remembered = false;
+  try{ remembered = sessionStorage.getItem(SESSION_KEY) === '1'; }catch(e){}
+  if(remembered && fbReady){
+    authed = true;
+    $('adminLogin').style.display = 'none';
+    $('adminPanel').classList.add('active');
+    loadAll();
+    switchTab('dashboard');
+  }
+})();
+
+console.log('✅ Advanced Admin ready — 💎 diamond icons + Bundle management');
+console.log('   Default password: admin123');
+})();
+</script>
+</body>
+</html>
